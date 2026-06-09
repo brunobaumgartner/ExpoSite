@@ -80,10 +80,12 @@ services:
     container_name: exposite_redis
     restart: unless-stopped
     command: redis-server --requirepass ${REDIS_SENHA}
+    environment:
+      REDIS_SENHA: ${REDIS_SENHA}
     volumes:
       - dados_redis:/data
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test: ["CMD-SHELL", "redis-cli -a $$REDIS_SENHA --no-auth-warning ping"]
       interval: 10s
       timeout: 5s
       retries: 3
