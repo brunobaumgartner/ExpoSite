@@ -1,0 +1,34 @@
+# Variáveis de ambiente — NUNCA versionar
+.env
+*.env.local
+
+# Laravel
+backend/vendor/
+backend/node_modules/
+backend/.env
+backend/storage/logs/
+backend/bootstrap/cache/
+
+# Python
+agente/__pycache__/
+agente/*.pyc
+agente/.venv/
+agente/venv/
+
+# Next.js
+templates/*/.next/
+templates/*/node_modules/
+templates/*/.env.local
+
+# Sites gerados dos tenants
+sites/*/
+
+# Docker volumes locais
+infra/volumes/
+
+# Sistema operacional
+.DS_Store
+Thumbs.db
+
+# Claude Code
+.claude/

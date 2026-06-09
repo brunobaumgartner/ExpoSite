@@ -1,0 +1,130 @@
+services:
+
+  nginx:
+    image: nginx:alpine
+    container_name: exposite_nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro
+      - ../backend:/var/www/backend:ro
+      - ../sites:/var/www/sites:ro
+      - dados_ssl:/etc/letsencrypt:ro
+    depends_on:
+      - backend
+    networks:
+      - rede_interna
+
+  backend:
+    build:
+      context: ../backend
+      dockerfile: ../infra/docker/backend.Dockerfile
+    container_name: exposite_backend
+    restart: unless-stopped
+    env_file:
+      - ../.env
+    environment:
+      APP_ENV: ${APP_ENV}
+    volumes:
+      - ../backend:/var/www/backend
+    depends_on:
+      banco:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - rede_interna
+
+  queue:
+    build:
+      context: ../backend
+      dockerfile: ../infra/docker/backend.Dockerfile
+    container_name: exposite_queue
+    restart: unless-stopped
+    env_file:
+      - ../.env
+    command: php artisan queue:work --sleep=3 --tries=3 --timeout=90
+    volumes:
+      - ../backend:/var/www/backend
+    depends_on:
+      banco:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - rede_interna
+
+  banco:
+    image: mysql:8.0
+    container_name: exposite_banco
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${BD_SENHA_ROOT}
+      MYSQL_DATABASE: plataforma
+      MYSQL_USER: ${BD_USUARIO}
+      MYSQL_PASSWORD: ${BD_SENHA}
+    volumes:
+      - dados_banco:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - rede_interna
+
+  redis:
+    image: redis:alpine
+    container_name: exposite_redis
+    restart: unless-stopped
+    command: redis-server --requirepass ${REDIS_SENHA}
+    volumes:
+      - dados_redis:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    networks:
+      - rede_interna
+
+  agente:
+    build:
+      context: ../agente
+      dockerfile: ../infra/docker/agente.Dockerfile
+    container_name: exposite_agente
+    restart: unless-stopped
+    env_file:
+      - ../.env
+    volumes:
+      - ../agente:/app
+    depends_on:
+      banco:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - rede_interna
+
+  monitoramento:
+    image: louislam/uptime-kuma:1
+    container_name: exposite_monitoramento
+    restart: unless-stopped
+    ports:
+      - "3001:3001"
+    volumes:
+      - dados_monitoramento:/app/data
+    networks:
+      - rede_interna
+
+networks:
+  rede_interna:
+    driver: bridge
+
+volumes:
+  dados_banco:
+  dados_redis:
+  dados_ssl:
+  dados_monitoramento:
