@@ -1,628 +1,314 @@
-# VozSite — Guia de Implantação
+# ExpoSite — Guia de Implantação
 
-## Dados da infraestrutura
+## Infraestrutura atual
+
 | Item | Valor |
 |---|---|
 | Provedor | Contabo |
-| Sistema | Ubuntu 22.04 LTS |
-| CPU | 4 vCPU |
-| RAM | 8 GB |
-| Disco | 150 GB SSD |
-| IP Público | 123.456.789.000 |
-| Domínio | vozsite.com.br |
-| Repositório | github.com/seunome/vozsite |
-| Diretório do projeto | /srv/vozsite |
+| Plano | Cloud VPS 10 SSD |
+| Sistema | Ubuntu 24.04 LTS |
+| IP Público | 144.91.70.44 |
+| SSH porta padrão | 22 (porta 443 usada pelo sshd nesta VPS) |
+| Domínio | exposite.com.br |
+| Repositório | github.com/brunobaumgartner/ExpoSite |
+| Diretório do projeto | /srv/exposite |
 
-## Como acessar a VPS
-Via terminal:
+## Acesso SSH
+
 ```bash
-ssh root@123.456.789.000
+ssh root@144.91.70.44
+
+# Se a porta 22 não responder, usar:
+ssh root@144.91.70.44 -p 443
 ```
 
-Via VS Code Remote SSH:
-- `Ctrl+Shift+P` → `Remote-SSH: Connect to Host`
-- `root@123.456.789.000`
-- Abrir pasta `/srv/vozsite`
+> Se aparecer "WARNING: REMOTE HOST IDENTIFICATION HAS CHANGED", limpe o registro antigo:
+> ```bash
+> ssh-keygen -R 144.91.70.44
+> ```
 
 ---
 
-## Etapa 1 — Atualizar o sistema
+## Serviços acessíveis (Fase 1)
 
-```bash
-apt update && apt upgrade -y
-```
+| URL | Serviço |
+|---|---|
+| `http://144.91.70.44/api/ping` | Health check da API → `{"status":"ok"}` |
+| `http://144.91.70.44/up` | Health check do Laravel → `200 OK` |
+| `http://144.91.70.44:3001` | Uptime Kuma — monitoramento |
 
-**Por que fazer isso primeiro?**
-O Ubuntu recém instalado pode ter pacotes desatualizados com falhas de
-segurança conhecidas. Atualizar antes de instalar qualquer coisa garante
-uma base limpa e segura.
-
----
-
-## Etapa 2 — Instalar dependências essenciais
-
-```bash
-apt install -y \
-  git \
-  curl \
-  wget \
-  unzip \
-  nano \
-  ufw \
-  fail2ban \
-  certbot \
-  python3-certbot-nginx
-```
-
-**O que cada pacote faz:**
-- `git` — clonar e atualizar o repositório
-- `curl` / `wget` — download de scripts e arquivos
-- `unzip` — descompactar arquivos
-- `nano` — editor de texto no terminal
-- `ufw` — firewall simples para controlar portas abertas
-- `fail2ban` — bloqueia IPs com tentativas de força bruta
-- `certbot` — gera e renova certificados SSL automaticamente
-- `python3-certbot-nginx` — plugin do Certbot para Nginx
+HTTPS e domínio próprio serão configurados na Fase 7.
 
 ---
 
-## Etapa 3 — Configurar o firewall
+## Etapa 1 — Pré-requisitos na VPS
+
+O servidor já vem com Git, Docker, Docker Compose e Node.js instalados.
+Verificar:
 
 ```bash
-# Permite SSH — OBRIGATÓRIO antes de ativar o firewall
-ufw allow 22
-
-# HTTP e HTTPS — acesso público
-ufw allow 80
-ufw allow 443
-
-# Ativa o firewall
-ufw enable
-
-# Verifica
-ufw status
-```
-
-**Por que configurar antes de qualquer outra coisa?**
-Por padrão o Ubuntu recém instalado tem todas as portas abertas. O firewall
-garante que apenas as portas necessárias fiquem expostas. O `allow 22`
-antes do `enable` é crítico — sem ele você perde o acesso SSH ao ativar.
-
----
-
-## Etapa 4 — Configurar o fail2ban
-
-```bash
-systemctl enable fail2ban
-systemctl start fail2ban
-systemctl status fail2ban
-```
-
-**Por que o fail2ban?**
-Qualquer servidor com IP público começa a receber tentativas de acesso por
-força bruta em minutos. O fail2ban monitora as tentativas falhas de SSH e
-bloqueia automaticamente o IP após 5 tentativas em 10 minutos.
-
----
-
-## Etapa 5 — Hardening do SSH
-
-```bash
-# Desativa login por senha — apenas chave SSH permitida
-sed -i 's/#PasswordAuthentication yes/PasswordAuthentication no/' /etc/ssh/sshd_config
-sed -i 's/PermitRootLogin yes/PermitRootLogin prohibit-password/' /etc/ssh/sshd_config
-
-systemctl restart sshd
-```
-
-> ⚠️ Só execute isso se já tiver sua chave SSH configurada na VPS.
-> Sem a chave, você perde o acesso permanentemente.
-
-**Por que desativar login por senha?**
-Com login apenas por chave SSH, ataques de força bruta se tornam impossíveis
-por design — não há senha para tentar adivinhar.
-
----
-
-## Etapa 6 — Instalar Docker
-
-```bash
-curl -fsSL https://get.docker.com | sh
-
-# Verifica
+git --version
 docker --version
 docker compose version
+node --version
 ```
 
-**Por que Docker?**
-Todos os serviços da plataforma (Laravel, MySQL, Redis, Nginx, agente Python)
-rodam em containers isolados. Isso garante que o ambiente de produção é
-idêntico ao de desenvolvimento e facilita atualizações e rollbacks sem
-afetar o sistema operacional da VPS.
-
----
-
-## Etapa 7 — Instalar Node.js e Claude Code
-
+Se algum faltar:
 ```bash
-# Instala Node.js 22 (LTS)
+# Docker
+curl -fsSL https://get.docker.com | sh
+
+# Node.js 22
 curl -fsSL https://deb.nodesource.com/setup_22.x | bash -
 apt install -y nodejs
-
-# Verifica
-node --version
-npm --version
-
-# Instala o Claude Code globalmente
-npm install -g @anthropic-ai/claude-code
-
-# Verifica
-claude --version
-```
-
-**Por que Node.js na VPS?**
-O Claude Code roda em Node.js. Com ele instalado na VPS, você pode
-desenvolver e executar comandos diretamente pelo VS Code Remote SSH sem
-precisar instalar nada na máquina local.
-
----
-
-## Etapa 8 — Configurar Git
-
-```bash
-git config --global user.name "Seu Nome"
-git config --global user.email "seu@email.com"
-git config --global init.defaultBranch main
 ```
 
 ---
 
-## Etapa 9 — Clonar o repositório
+## Etapa 2 — Clonar o repositório
 
 ```bash
-mkdir -p /srv/vozsite
-cd /srv/vozsite
-
-git clone https://github.com/seunome/vozsite.git .
-
-# Verifica a estrutura
+mkdir -p /srv/exposite
+git clone https://github.com/brunobaumgartner/ExpoSite.git /srv/exposite
+cd /srv/exposite
 ls -la
 ```
 
-Estrutura esperada após o clone:
-```
-/srv/vozsite/
-  backend/
-  agente/
-  templates/
-  infra/
-  docs/
-  .gitignore
-  .env.exemplo
-```
-
 ---
 
-## Etapa 10 — Configurar o .env
+## Etapa 3 — Configurar o .env raiz
 
 ```bash
-cd /srv/vozsite
-
+cd /srv/exposite
 cp .env.exemplo .env
 nano .env
 ```
 
-Preencha todos os valores reais:
+Gerar senhas aleatórias:
+```bash
+openssl rand -hex 16   # para BD_SENHA_ROOT, BD_SENHA, REDIS_SENHA
+openssl rand -hex 32   # para API_TOKEN_INTERNO
+```
 
+Preencher no `.env`:
 ```env
-# Banco de dados
-BD_SENHA_ROOT=gere_uma_senha_forte_aqui
-BD_USUARIO=vozsite_usuario
-BD_SENHA=gere_outra_senha_forte_aqui
+BD_SENHA_ROOT=<senha gerada>
+BD_USUARIO=exposite_usuario
+BD_SENHA=<senha gerada>
+REDIS_SENHA=<senha gerada>
 
-# Redis
-REDIS_SENHA=gere_senha_redis_aqui
+APP_KEY=                  # gerado na Etapa 5
+APP_URL=http://144.91.70.44
+APP_DOMINIO=exposite.com.br
+APP_ENV=local
+APP_DEBUG=true
 
-# Laravel
-APP_CHAVE=             # gerado na Etapa 12
-APP_URL=https://vozsite.com.br
-APP_ENV=production
-APP_DEBUG=false
-APP_DOMINIO=vozsite.com.br
-
-# Mercado Pago
-MP_ACCESS_TOKEN=APP_USR-xxxxxxxxxxxxxxxxxxxx
-MP_PUBLIC_KEY=APP_USR-xxxxxxxxxxxxxxxxxxxx
-MP_WEBHOOK_SECRET=seu_webhook_secret_mp
-
-# Telegram
-TELEGRAM_WEBHOOK_SECRET=gere_um_secret_aqui
-
-# OpenAI
-OPENAI_CHAVE=sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxx
-
-# Token interno (agente → API Laravel)
-API_TOKEN_INTERNO=gere_token_longo_aqui
-
-# Email
-MAIL_HOST=smtp.mailgun.org
-MAIL_PORT=587
-MAIL_USERNAME=seu@dominio.com
-MAIL_PASSWORD=sua_senha_smtp
-MAIL_FROM=noreply@vozsite.com.br
+API_TOKEN_INTERNO=<token gerado>
 ```
 
-**Como gerar senhas fortes:**
-```bash
-# Gera uma senha aleatória de 32 caracteres
-openssl rand -base64 32
-```
+> O `.env` raiz controla as variáveis dos containers Docker.
+> O `backend/.env` (criado na Etapa 5) é o arquivo lido pelo Laravel.
 
 ---
 
-## Etapa 11 — Configurar o DNS
+## Etapa 4 — Subir os containers
 
-No painel do seu provedor de domínio, crie os registros:
+> **Importante:** sempre usar `--env-file .env` ao rodar o Docker Compose com
+> `-f infra/docker-compose.yml`. Sem ele, o Docker Compose não encontra o `.env`
+> (procura no diretório do arquivo compose, não na raiz do projeto).
 
-| Tipo | Nome | Valor | TTL |
-|---|---|---|---|
-| A | @ | 123.456.789.000 | 3600 |
-| A | * | 123.456.789.000 | 3600 |
-| A | www | 123.456.789.000 | 3600 |
+```bash
+cd /srv/exposite
 
-O registro `*` (wildcard) é essencial — ele faz todos os subdomínios
-(`cliente.vozsite.com.br`) apontarem para a VPS automaticamente, sem
-precisar criar um registro DNS para cada novo cliente.
+# Subir todos os containers (exceto agente — disponível na Fase 3)
+docker compose -f infra/docker-compose.yml --env-file .env up -d \
+  nginx banco redis backend queue monitoramento
 
-> ⏳ Aguarde a propagação do DNS (pode levar até 24h, geralmente menos de 1h).
-> Verifique com: `dig vozsite.com.br` ou `nslookup vozsite.com.br`
+# Acompanhar logs
+docker compose -f infra/docker-compose.yml --env-file .env logs -f
+
+# Verificar status
+docker compose -f infra/docker-compose.yml --env-file .env ps
+```
+
+Status esperado após ~1 minuto (banco e redis levam alguns segundos para ficarem healthy):
+```
+NAME                     STATUS
+exposite_backend         Up
+exposite_banco           Up (healthy)
+exposite_monitoramento   Up (healthy)
+exposite_nginx           Up
+exposite_queue           Up
+exposite_redis           Up (healthy)
+```
+
+> Se o `queue` ficar em "Restarting", é normal — ele aguarda o `composer install`
+> da Etapa 5.
 
 ---
 
-## Etapa 12 — Gerar a APP_KEY do Laravel
+## Etapa 5 — Configurar o backend Laravel
+
+### 5.1 Criar diretórios de permissão
 
 ```bash
-cd /srv/vozsite/backend
-
-# Instala as dependências PHP
-docker run --rm \
-  -v $(pwd):/var/www/backend \
-  -w /var/www/backend \
-  composer:latest composer install --no-dev --optimize-autoloader
-
-# Gera a chave
-docker run --rm \
-  -v $(pwd):/var/www/backend \
-  -w /var/www/backend \
-  php:8.3-cli php artisan key:generate --show
+mkdir -p /srv/exposite/backend/bootstrap/cache
+mkdir -p /srv/exposite/backend/storage/framework/{cache,sessions,testing,views}
+mkdir -p /srv/exposite/backend/storage/logs
+mkdir -p /srv/exposite/backend/storage/app/public
+chmod -R 775 /srv/exposite/backend/bootstrap/cache /srv/exposite/backend/storage
+chown -R 33:33 /srv/exposite/backend/bootstrap/cache /srv/exposite/backend/storage
 ```
 
-Copie o valor gerado e cole no `.env` em `APP_CHAVE=`.
+### 5.2 Criar o backend/.env
 
----
-
-## Etapa 13 — Gerar o certificado SSL wildcard
+O `backend/.env` é o arquivo lido pelo Laravel dentro do container.
+Rode o script abaixo a partir da raiz do projeto:
 
 ```bash
-certbot certonly \
-  --manual \
-  --preferred-challenges dns \
-  -d "vozsite.com.br" \
-  -d "*.vozsite.com.br"
-```
+cd /srv/exposite
+export $(grep -v "^#" .env | grep -v "^$" | xargs)
 
-O Certbot vai pedir para você criar um registro DNS TXT para validação.
-Siga as instruções na tela:
+cat > backend/.env << EOF
+APP_NAME=ExpoSite
+APP_ENV=${APP_ENV:-local}
+APP_KEY=
+APP_DEBUG=${APP_DEBUG:-true}
+APP_URL=${APP_URL:-http://144.91.70.44}
+APP_TIMEZONE=America/Sao_Paulo
+APP_LOCALE=pt_BR
 
-1. Certbot exibe algo como:
-   ```
-   Please deploy a DNS TXT record under the name:
-   _acme-challenge.vozsite.com.br
-   with the following value:
-   xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-   ```
+LOG_CHANNEL=stack
+LOG_LEVEL=debug
 
-2. No painel do seu provedor de DNS, crie o registro:
-   | Tipo | Nome | Valor |
-   |---|---|---|
-   | TXT | _acme-challenge | xxxxxxxxxxxxxxxxxxx |
+DB_CONNECTION=mysql
 
-3. Aguarde alguns minutos e pressione Enter no terminal.
+QUEUE_CONNECTION=redis
+CACHE_STORE=redis
+SESSION_DRIVER=redis
+SESSION_LIFETIME=120
 
-4. Certificado gerado em:
-   ```
-   /etc/letsencrypt/live/vozsite.com.br/fullchain.pem
-   /etc/letsencrypt/live/vozsite.com.br/privkey.pem
-   ```
+REDIS_CLIENT=phpredis
+REDIS_HOST=redis
+REDIS_PASSWORD=${REDIS_SENHA}
+REDIS_PORT=6379
 
-**Renovação automática:**
-```bash
-echo "0 0,12 * * * root certbot renew --quiet --deploy-hook 'docker exec plataforma_nginx nginx -s reload'" \
-  >> /etc/crontab
-```
+BD_HOST=banco
+BD_PORTA=3306
+BD_USUARIO=${BD_USUARIO}
+BD_SENHA=${BD_SENHA}
 
----
-
-## Etapa 14 — Subir os containers
-
-```bash
-cd /srv/vozsite/infra
-
-docker compose up -d
-
-# Acompanha os logs durante a subida
-docker compose logs -f
-
-# Verifica status de todos os containers
-docker compose ps
-```
-
-Resultado esperado:
-```
-NAME                      STATUS
-vozsite_nginx             running
-vozsite_backend           running
-vozsite_banco             running (healthy)
-vozsite_redis             running (healthy)
-vozsite_queue             running
-vozsite_agente            running
-vozsite_monitoramento     running
-```
-
----
-
-## Etapa 15 — Rodar as migrations
-
-```bash
-# Banco central da plataforma
-docker exec -it vozsite_backend php artisan migrate --force
-
-# Verifica as tabelas criadas
-docker exec -it vozsite_banco mysql \
-  -uvozsite_usuario -p$BD_SENHA plataforma \
-  -e "SHOW TABLES;"
-```
-
-Resultado esperado:
-```
-+---------------------------+
-| Tables_in_plataforma      |
-+---------------------------+
-| admins                    |
-| bot_pool                  |
-| cadastros_pendentes       |
-| faturas                   |
-| failed_jobs               |
-| jobs                      |
-| migrations                |
-| planos                    |
-| tenant_configs            |
-| tenants                   |
-+---------------------------+
-```
-
----
-
-## Etapa 16 — Otimizar o Laravel para produção
-
-```bash
-docker exec -it vozsite_backend php artisan config:cache
-docker exec -it vozsite_backend php artisan route:cache
-docker exec -it vozsite_backend php artisan view:cache
-docker exec -it vozsite_backend php artisan event:cache
-```
-
-**O que cada cache faz:**
-- `config:cache` — une todos os arquivos de config em um único arquivo lido uma vez
-- `route:cache` — compila todas as rotas em um arquivo otimizado
-- `view:cache` — pré-compila todos os templates Blade
-- `event:cache` — indexa todos os eventos e listeners
-
-> ⚠️ Após qualquer atualização de código, limpe e regere os caches:
-> ```bash
-> docker exec -it vozsite_backend php artisan optimize:clear
-> docker exec -it vozsite_backend php artisan optimize
-> ```
-
----
-
-## Etapa 17 — Criar o primeiro admin
-
-```bash
-docker exec -it vozsite_backend php artisan tinker
-
-# Dentro do tinker
-\App\Modules\Core\Models\Admin::create([
-    'nome'  => 'Seu Nome',
-    'email' => 'admin@vozsite.com.br',
-    'senha' => \Illuminate\Support\Facades\Hash::make('sua_senha_aqui'),
-]);
-
-exit
-```
-
----
-
-## Etapa 18 — Adicionar os primeiros bots ao pool
-
-```bash
-docker exec -it vozsite_backend php artisan tinker
-
-# Para cada bot criado no BotFather, insira o token:
-\App\Modules\Core\Models\BotPool::create([
-    'token'    => '123456789:AABBccDDeeFFggHHiiJJkkLLmmNNooPPqq',
-    'username' => 'VozSiteBot1',
-    'status'   => 'disponivel',
-]);
-
-exit
-```
-
-> 💡 Crie pelo menos 10 bots antes de lançar para ter margem nos
-> primeiros cadastros. Acesse @BotFather no Telegram e use /newbot.
-
----
-
-## Etapa 19 — Criar os planos iniciais
-
-```bash
-docker exec -it vozsite_backend php artisan tinker
-
-\App\Modules\Core\Models\Plano::insert([
-    [
-        'nome'                  => 'Básico',
-        'modulos'               => json_encode(['core', 'site']),
-        'limite_mensagens'      => 50,
-        'limite_produtos'       => null,
-        'limite_agendamentos'   => null,
-        'preco_mensal'          => 97.00,
-        'preco_anual'           => 970.00,
-        'ativo'                 => true,
-        'created_at'            => now(),
-        'updated_at'            => now(),
-    ],
-    [
-        'nome'                  => 'Pro',
-        'modulos'               => json_encode(['core', 'site', 'ecommerce', 'agendamento']),
-        'limite_mensagens'      => 200,
-        'limite_produtos'       => 100,
-        'limite_agendamentos'   => 100,
-        'preco_mensal'          => 197.00,
-        'preco_anual'           => 1970.00,
-        'ativo'                 => true,
-        'created_at'            => now(),
-        'updated_at'            => now(),
-    ],
-    [
-        'nome'                  => 'Business',
-        'modulos'               => json_encode(['core', 'site', 'ecommerce', 'agendamento', 'cardapio']),
-        'limite_mensagens'      => 1000,
-        'limite_produtos'       => null,
-        'limite_agendamentos'   => null,
-        'preco_mensal'          => 597.00,
-        'preco_anual'           => 5970.00,
-        'ativo'                 => true,
-        'created_at'            => now(),
-        'updated_at'            => now(),
-    ],
-]);
-
-exit
-```
-
----
-
-## Etapa 20 — Registrar os webhooks dos bots do pool
-
-Para cada bot adicionado ao pool, registre o webhook apontando para o worker:
-
-```bash
-# Substitua {TOKEN} pelo token de cada bot
-curl -X POST \
-  "https://api.telegram.org/bot{TOKEN}/setWebhook" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "url": "https://vozsite.com.br/webhook",
-    "secret_token": "SEU_TELEGRAM_WEBHOOK_SECRET",
-    "allowed_updates": ["message"]
-  }'
-
-# Verifica se o webhook foi registrado
-curl "https://api.telegram.org/bot{TOKEN}/getWebhookInfo"
-```
-
----
-
-## Etapa 21 — Configurar backup automático
-
-```bash
-mkdir -p /srv/vozsite/backups
-
-# Cria o script de backup
-cat > /srv/vozsite/infra/scripts/backup.sh << 'EOF'
-#!/bin/bash
-set -e
-
-DIRETORIO_BACKUP="/srv/vozsite/backups"
-DATA=$(date +%Y-%m-%d_%H-%M)
-ARQUIVO="${DIRETORIO_BACKUP}/backup_${DATA}.sql.gz"
-
-mkdir -p "$DIRETORIO_BACKUP"
-
-docker exec vozsite_banco \
-  sh -c "mysqldump -u root -p\${MYSQL_ROOT_PASSWORD} --all-databases" \
-  | gzip > "$ARQUIVO"
-
-find "$DIRETORIO_BACKUP" -name "*.sql.gz" -mtime +30 -delete
-
-echo "$(date) — Backup gerado: $ARQUIVO"
+API_TOKEN_INTERNO=${API_TOKEN_INTERNO}
+APP_DOMINIO=${APP_DOMINIO:-exposite.com.br}
 EOF
+```
 
-chmod +x /srv/vozsite/infra/scripts/backup.sh
+### 5.3 Instalar dependências e gerar APP_KEY
 
-# Agenda para todo dia às 02:00
-echo "0 2 * * * root /srv/vozsite/infra/scripts/backup.sh >> /var/log/backup-vozsite.log 2>&1" \
-  >> /etc/crontab
+```bash
+# Instalar Composer
+docker exec exposite_backend composer install --no-dev --optimize-autoloader --no-interaction
 
-# Testa o backup manualmente
-/srv/vozsite/infra/scripts/backup.sh
+# Gerar APP_KEY (salva automaticamente em backend/.env)
+docker exec exposite_backend php artisan key:generate --force
+
+# Otimizar
+docker exec exposite_backend php artisan optimize
+```
+
+### 5.4 Reiniciar o queue worker
+
+```bash
+docker compose -f /srv/exposite/infra/docker-compose.yml --env-file /srv/exposite/.env restart queue
 ```
 
 ---
 
-## Etapa 22 — Configurar o Uptime Kuma
-
-1. Acesse `http://123.456.789.000:3001` no navegador
-2. Crie o usuário administrador
-3. Adicione os seguintes monitors:
-
-| Nome | Tipo | URL/Host |
-|---|---|---|
-| API Laravel | HTTP | `https://vozsite.com.br/api/health` |
-| Nginx | HTTP | `https://vozsite.com.br` |
-| Banco MySQL | TCP Port | `localhost:3306` |
-| Redis | TCP Port | `localhost:6379` |
-| Agente Python | HTTP | `http://localhost:8443/health` |
-
-Configure alertas por email ou Telegram para cada monitor.
-
-> ⚠️ Bloqueie a porta 3001 do firewall após configurar —
-> o Uptime Kuma não precisa ficar exposto publicamente:
-> ```bash
-> ufw deny 3001
-> ```
-
----
-
-## Etapa 23 — Verificação final
+## Etapa 6 — Rodar as migrations
 
 ```bash
-# Todos os containers rodando
-docker compose -f /srv/vozsite/infra/docker-compose.yml ps
+docker exec exposite_backend php artisan migrate --force
+```
 
-# Health check da API
-curl https://vozsite.com.br/api/health
-
-# Resultado esperado:
-# {"status":"ok","banco":"ok","redis":"ok","timestamp":"..."}
-
-# Logs sem erros críticos
-docker compose -f /srv/vozsite/infra/docker-compose.yml logs --tail=50
-
-# Acessa o painel admin
-# https://vozsite.com.br/admin
+Resultado esperado:
+```
+0001_01_01_000000_create_users_table .................. DONE
+0001_01_01_000001_create_cache_table .................. DONE
+0001_01_01_000002_create_jobs_table ................... DONE
+2024_01_01_000001_criar_tabela_planos ................. DONE
+2024_01_01_000002_criar_tabela_clientes ............... DONE
+2024_01_01_000003_criar_tabela_cliente_configs ........ DONE
+2024_01_01_000004_criar_tabela_bot_pool ............... DONE
+2024_01_01_000005_criar_tabela_faturas ................ DONE
+2024_01_01_000006_criar_tabela_cadastros_pendentes .... DONE
+2024_01_01_000007_criar_tabela_admins ................. DONE
 ```
 
 ---
 
-## Etapa 24 — Primeiro commit pós-implantação
+## Etapa 7 — Criar os planos iniciais
 
 ```bash
-cd /srv/vozsite
+docker exec -it exposite_backend php artisan tinker
+```
 
-git add .
-git commit -m "chore: implantação inicial em produção"
-git push origin main
+```php
+App\Modules\Core\Models\Plano::insert([
+    [
+        'nome'                => 'Básico',
+        'modulos'             => json_encode(['core', 'site']),
+        'limite_mensagens'    => 50,
+        'limite_produtos'     => null,
+        'limite_agendamentos' => null,
+        'preco_mensal'        => 97.00,
+        'preco_anual'         => 970.00,
+        'ativo'               => true,
+        'created_at'          => now(),
+        'updated_at'          => now(),
+    ],
+    [
+        'nome'                => 'Pro',
+        'modulos'             => json_encode(['core', 'site', 'ecommerce', 'agendamento']),
+        'limite_mensagens'    => 200,
+        'limite_produtos'     => 100,
+        'limite_agendamentos' => 100,
+        'preco_mensal'        => 197.00,
+        'preco_anual'         => 1970.00,
+        'ativo'               => true,
+        'created_at'          => now(),
+        'updated_at'          => now(),
+    ],
+    [
+        'nome'                => 'Business',
+        'modulos'             => json_encode(['core', 'site', 'ecommerce', 'agendamento', 'cardapio']),
+        'limite_mensagens'    => 1000,
+        'limite_produtos'     => null,
+        'limite_agendamentos' => null,
+        'preco_mensal'        => 597.00,
+        'preco_anual'         => 5970.00,
+        'ativo'               => true,
+        'created_at'          => now(),
+        'updated_at'          => now(),
+    ],
+]);
+exit
+```
+
+---
+
+## Etapa 8 — Criar o primeiro admin
+
+```bash
+docker exec -it exposite_backend php artisan tinker
+```
+
+```php
+App\Modules\Core\Models\Admin::create([
+    'nome'  => 'Bruno Baumgartner',
+    'email' => 'brunobaumgartner@hotmail.com',
+    'senha' => Illuminate\Support\Facades\Hash::make('sua_senha_aqui'),
+]);
+exit
 ```
 
 ---
@@ -630,93 +316,82 @@ git push origin main
 ## Procedimentos operacionais
 
 ### Atualizar o código em produção
+
 ```bash
-cd /srv/vozsite
+cd /srv/exposite
 git pull origin main
-docker compose -f infra/docker-compose.yml build backend agente
-docker compose -f infra/docker-compose.yml up -d
-docker exec vozsite_backend php artisan migrate --force
-docker exec vozsite_backend php artisan optimize:clear
-docker exec vozsite_backend php artisan optimize
+docker compose -f infra/docker-compose.yml --env-file .env build backend queue
+docker compose -f infra/docker-compose.yml --env-file .env up -d
+docker exec exposite_backend php artisan migrate --force
+docker exec exposite_backend php artisan optimize:clear
+docker exec exposite_backend php artisan optimize
 ```
 
-### Reiniciar um serviço específico
+### Reiniciar um serviço
+
 ```bash
-docker compose -f /srv/vozsite/infra/docker-compose.yml restart backend
-docker compose -f /srv/vozsite/infra/docker-compose.yml restart agente
-docker compose -f /srv/vozsite/infra/docker-compose.yml restart nginx
+docker compose -f /srv/exposite/infra/docker-compose.yml --env-file /srv/exposite/.env restart backend
+docker compose -f /srv/exposite/infra/docker-compose.yml --env-file /srv/exposite/.env restart queue
+docker compose -f /srv/exposite/infra/docker-compose.yml --env-file /srv/exposite/.env restart nginx
 ```
 
 ### Ver logs em tempo real
+
 ```bash
 # Todos os serviços
-docker compose -f /srv/vozsite/infra/docker-compose.yml logs -f
+docker compose -f /srv/exposite/infra/docker-compose.yml --env-file /srv/exposite/.env logs -f
 
 # Serviço específico
-docker compose -f /srv/vozsite/infra/docker-compose.yml logs -f agente
-docker compose -f /srv/vozsite/infra/docker-compose.yml logs -f backend
+docker compose -f /srv/exposite/infra/docker-compose.yml --env-file /srv/exposite/.env logs -f backend
+docker compose -f /srv/exposite/infra/docker-compose.yml --env-file /srv/exposite/.env logs -f queue
 ```
 
-### Restaurar um backup
+### Suspender um cliente manualmente
+
 ```bash
-# Lista os backups disponíveis
-ls -lh /srv/vozsite/backups/
+docker exec -it exposite_backend php artisan tinker
 
-# Restaura um backup específico
-gunzip < /srv/vozsite/backups/backup_2024-01-15_02-00.sql.gz \
-  | docker exec -i vozsite_banco mysql -u root -p$BD_SENHA_ROOT
-```
-
-### Adicionar bots ao pool
-```bash
-docker exec -it vozsite_backend php artisan tinker
-
-\App\Modules\Core\Models\BotPool::create([
-    'token'    => 'TOKEN_DO_NOVO_BOT',
-    'username' => 'VozSiteBot10',
-    'status'   => 'disponivel',
-]);
-```
-
-### Suspender um tenant manualmente
-```bash
-docker exec -it vozsite_backend php artisan tinker
-
-\App\Modules\Core\Models\Tenant::where('slug', 'slug-do-tenant')
+App\Modules\Core\Models\Cliente::where('slug', 'slug-do-cliente')
     ->update(['status' => 'suspenso', 'suspenso_em' => now()]);
+exit
+```
+
+### Backup manual do banco
+
+```bash
+/srv/exposite/infra/scripts/backup.sh
 ```
 
 ---
 
-## Checklist de implantação
+## Notas de implantação (aprendizados)
 
-- [ ] Sistema atualizado (`apt update && apt upgrade`)
-- [ ] Dependências instaladas (git, curl, ufw, fail2ban, certbot)
-- [ ] Firewall configurado (22, 80, 443 abertas)
-- [ ] Fail2ban ativo
-- [ ] SSH hardening aplicado (somente chave)
-- [ ] Docker instalado e funcionando
-- [ ] Node.js e Claude Code instalados
-- [ ] Git configurado
-- [ ] Repositório clonado em `/srv/vozsite`
-- [ ] `.env` criado e preenchido com valores reais
-- [ ] DNS configurado (A para @ e *)
-- [ ] DNS propagado (verificado com `dig`)
-- [ ] Certificado SSL wildcard gerado
-- [ ] Renovação automática do SSL configurada
-- [ ] Containers Docker rodando sem erros
-- [ ] Migrations do banco central executadas (10 tabelas)
-- [ ] Laravel otimizado para produção (caches gerados)
+| Problema | Causa | Solução |
+|---|---|---|
+| `docker compose` não lê variáveis | Docker Compose v5 procura `.env` no dir do compose file | Sempre usar `--env-file .env` |
+| Redis unhealthy | `redis-cli ping` falha quando auth está ativo | Healthcheck com `CMD-SHELL` + senha |
+| Redis 8 não inicia | Redis 8.x carrega módulos e quebra `--requirepass` na CLI | Pinado em `redis:7-alpine` |
+| Porta 443 ocupada | sshd desta VPS escuta na porta 443 | Nginx usa apenas porta 80 nas Fases 1-6 |
+| Composer install falha | `symfony/clock v8.1.0` exige PHP ≥ 8.4.1 | Dockerfile atualizado para PHP 8.4 |
+| `bootstrap/cache` não existe | Git não versiona diretórios vazios | Criar manualmente antes do `composer install` |
+| `backend/.env` ausente | Gitignored — não vai no repo | Criar com script na Etapa 5.2 |
+
+---
+
+## Checklist da Fase 1
+
+- [x] VPS acessível via SSH
+- [x] Repositório clonado em `/srv/exposite`
+- [x] `.env` raiz criado e preenchido
+- [x] `backend/.env` criado com variáveis do Laravel
+- [x] Containers rodando: banco, redis, backend, nginx, queue, monitoramento
+- [x] `composer install` executado
+- [x] `APP_KEY` gerada
+- [x] Migrations rodadas (10 tabelas)
+- [x] `GET /api/ping` → `{"status":"ok"}`
+- [x] `GET /up` → `200 OK`
+- [ ] Planos iniciais criados (Básico, Pro, Business)
 - [ ] Primeiro admin criado
-- [ ] Planos criados (Básico, Pro, Business)
-- [ ] Bots adicionados ao pool (mínimo 10)
-- [ ] Webhooks dos bots registrados
-- [ ] Backup automático configurado (cron 02:00)
-- [ ] Backup manual testado com sucesso
-- [ ] Uptime Kuma configurado com monitors e alertas
-- [ ] Porta 3001 bloqueada no firewall
-- [ ] Health check respondendo: `{"status":"ok",...}`
-- [ ] Painel admin acessível em `https://vozsite.com.br/admin`
-- [ ] Primeiro commit pós-implantação feito
+- [ ] Uptime Kuma configurado (`http://144.91.70.44:3001`)
 
-**🚀 Plataforma implantada e pronta para receber os primeiros clientes.**
+**Próxima fase → Fase 2: Pagamento e Onboarding**

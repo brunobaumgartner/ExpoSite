@@ -328,25 +328,29 @@ MP_WEBHOOK_SECRET=
 
 ## Comandos úteis
 
+> **Atenção:** sempre usar `--env-file .env` com `-f infra/docker-compose.yml`.
+> O Docker Compose v5 procura o `.env` no diretório do arquivo compose (`infra/`),
+> não na raiz do projeto.
+
 ```bash
-# Subir todos os containers
-docker compose -f infra/docker-compose.yml up -d
+# Subir todos os containers (rodar da raiz /srv/exposite)
+docker compose -f infra/docker-compose.yml --env-file .env up -d
 
 # Ver logs em tempo real
-docker compose -f infra/docker-compose.yml logs -f
+docker compose -f infra/docker-compose.yml --env-file .env logs -f
 
 # Rodar migrations do banco central
-docker exec -it exposite_backend php artisan migrate --force
+docker exec exposite_backend php artisan migrate --force
 
 # Limpar e recriar caches do Laravel
-docker exec -it exposite_backend php artisan optimize:clear
-docker exec -it exposite_backend php artisan optimize
+docker exec exposite_backend php artisan optimize:clear
+docker exec exposite_backend php artisan optimize
 
 # Acessar tinker
 docker exec -it exposite_backend php artisan tinker
 
 # Ver filas
-docker exec -it exposite_backend php artisan queue:monitor
+docker exec exposite_backend php artisan queue:monitor
 
 # Backup manual
 /srv/exposite/infra/scripts/backup.sh
@@ -361,7 +365,7 @@ docker exec -it exposite_backend php artisan queue:monitor
 | exposite_nginx | Reverse proxy + wildcard subdomínio |
 | exposite_backend | Laravel 11 PHP-FPM |
 | exposite_banco | MySQL 8 |
-| exposite_redis | Redis |
+| exposite_redis | Redis 7 (pinado — Redis 8 quebra --requirepass) |
 | exposite_queue | Laravel queue worker |
 | exposite_agente | Worker Python (Telegram + Whisper + LLM) |
 | exposite_monitoramento | Uptime Kuma |
