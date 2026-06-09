@@ -9,6 +9,7 @@ services:
     volumes:
       - ./nginx/conf.d:/etc/nginx/conf.d:ro
       - ../backend:/var/www/backend:ro
+      - ../landing/out:/var/www/landing:ro
       - ../sites:/var/www/sites:ro
       - dados_ssl:/etc/letsencrypt:ro
     depends_on:
