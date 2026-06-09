@@ -128,12 +128,13 @@ exposite/
 |---|---|
 | `docs/implantacao.md` | Guia de implantação do zero |
 | `docs/fase-01-fundacao.md` | Fundação — Laravel, Docker, multi-tenancy |
-| `docs/fase-02-pagamento-onboarding.md` | Pagamento e provisionamento automático |
-| `docs/fase-03-agente-telegram.md` | Agente Telegram, Whisper e LLM |
-| `docs/fase-04-sites-templates.md` | Geração e publicação de sites |
-| `docs/fase-05-painel-cliente.md` | Painel web do cliente |
-| `docs/fase-06-painel-admin.md` | Painel administrativo |
-| `docs/fase-07-hardening-producao.md` | Segurança, backup e CI/CD |
+| `docs/fase-02-landing-page.md` | Landing page da plataforma — Next.js |
+| `docs/fase-03-pagamento-onboarding.md` | Pagamento e provisionamento automático |
+| `docs/fase-04-agente-telegram.md` | Agente Telegram, Whisper e LLM |
+| `docs/fase-05-sites-templates.md` | Geração e publicação de sites |
+| `docs/fase-06-painel-cliente.md` | Painel web do cliente |
+| `docs/fase-07-painel-admin.md` | Painel administrativo + agente da plataforma |
+| `docs/fase-08-hardening-producao.md` | Segurança, backup e CI/CD |
 | `docs/ARCHITECTURE.md` | Arquitetura geral do sistema |
 | `docs/DECISIONS.md` | Decisões arquiteturais registradas |
 

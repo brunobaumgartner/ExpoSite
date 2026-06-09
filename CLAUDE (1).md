@@ -286,12 +286,13 @@ ativo → cancelado (solicitação) → carência 30 dias → excluído
 | Fase | Descrição | Arquivo |
 |---|---|---|
 | 1 | Fundação — Laravel, Docker, multi-tenancy, auth | docs/fase-01-fundacao.md |
-| 2 | Pagamento e onboarding — MP, provisionamento, emails | docs/fase-02-pagamento-onboarding.md |
-| 3 | Agente Telegram — Python, Whisper, GPT-4o mini | docs/fase-03-agente-telegram.md |
-| 4 | Sites e templates — Next.js, Nginx, versionamento | docs/fase-04-sites-templates.md |
-| 5 | Painel do cliente — Vue 3, Inertia, LGPD | docs/fase-05-painel-cliente.md |
-| 6 | Painel admin — métricas, pool, planos | docs/fase-06-painel-admin.md |
-| 7 | Hardening e produção — segurança, backup, CI/CD | docs/fase-07-hardening-producao.md |
+| 2 | Landing page da plataforma — Next.js estático | docs/fase-02-landing-page.md |
+| 3 | Pagamento e onboarding — MP, provisionamento, emails | docs/fase-03-pagamento-onboarding.md |
+| 4 | Agente Telegram — Python, Whisper, GPT-4o mini | docs/fase-04-agente-telegram.md |
+| 5 | Sites e templates — Next.js, Nginx, versionamento | docs/fase-05-sites-templates.md |
+| 6 | Painel do cliente — Vue 3, Inertia, LGPD | docs/fase-06-painel-cliente.md |
+| 7 | Painel admin — métricas, pool, planos + agente da plataforma | docs/fase-07-painel-admin.md |
+| 8 | Hardening e produção — segurança, backup, CI/CD | docs/fase-08-hardening-producao.md |
 | — | Implantação do zero | docs/implantacao.md |
 
 ---
