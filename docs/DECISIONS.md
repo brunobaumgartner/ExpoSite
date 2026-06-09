@@ -92,3 +92,56 @@ Exceção: `Controlador` (sufixo necessário para convenção Laravel) e `Interf
 - `RegistradorModulos` (não `ModulosServiceProvider`)
 - `RepositorioCliente` (não `ClienteRepository`)
 - `ClienteControlador` (sufixo mantido por convenção Laravel)
+
+---
+
+## 010 — Planos por caso de uso, não por tamanho
+
+**Decisão:** 4 planos segmentados por tipo de negócio, não por "pequeno/médio/grande".
+
+| Plano | Valor | Tarefas/mês | Foco |
+|---|---|---|---|
+| Institucional | R$ 99 | 100 | Sites de conteúdo e captação de leads |
+| Service & Agendamento | R$ 139 | 200 | Barbearias, salões, clínicas |
+| E-commerce Starter | R$ 159 | 250 | Pequenas lojas virtuais |
+| E-commerce Avançado | R$ 299 | 600 | Lojas consolidadas e equipes |
+
+**Motivo:** cliente escolhe pelo problema que tem, não pelo quanto pode pagar.
+Reduz confusão e aumenta conversão no cadastro.
+
+**Alternativa descartada:** planos Básico/Pro/Business — genéricos demais, forçam o cliente a
+raciocinar sobre "tamanho" em vez de "necessidade".
+
+---
+
+## 011 — Tarefas como unidade de consumo (não mensagens)
+
+**Decisão:** cada ação completada pelo agente conta como 1 tarefa.
+Uma conversa de 5 mensagens que resulta em 1 alteração = 1 tarefa consumida.
+
+**Motivo:** mais justo para o cliente (não penaliza quem precisa de mais contexto para explicar)
+e mais simples de comunicar ("100 tarefas/mês" vs "100 mensagens/mês").
+
+**Custo real:** GPT-4o mini + Whisper ≈ R$ 0,003 por tarefa. Margem elevada em todos os planos.
+
+---
+
+## 012 — Pacotes avulsos de tarefas via Inline Keyboard Telegram
+
+**Decisão:** quando o cliente atinge o limite mensal, o bot responde automaticamente com
+uma mensagem estruturada e botões Inline Keyboard com opções de upgrade ou compra avulsa.
+
+Pacotes avulsos (válidos apenas no mês corrente):
+- +10 tarefas: R$ 15,00
+- +20 tarefas: R$ 25,00
+- +30 tarefas: R$ 35,00
+
+**Motivo:** permite monetização adicional sem forçar mudança de plano. Custo real de
+~R$ 0,03 para 10 tarefas — margem de 500x. Cliente percebe como conveniência, não punição.
+
+**Implementação:** agente Python verifica contador antes de processar cada mensagem.
+Se `tarefas_usadas >= limite_plano`, dispara o fluxo de Inline Keyboard em vez de processar.
+Pagamento avulso via Mercado Pago (mesmo fluxo da Fase 3).
+
+**Alternativa descartada:** cobrar por mensagem excedente automaticamente — invasivo e
+gera chargebacks.

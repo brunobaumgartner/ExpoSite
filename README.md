@@ -34,11 +34,15 @@ Após a criação, o cliente gerencia tudo pelo mesmo Telegram ou pelo painel we
 
 ## Planos
 
-| Plano | Mensalidade | Mensagens/mês | Módulos |
+| Plano | Valor | Tarefas/mês | Foco |
 |---|---|---|---|
-| Básico | R$ 97 | 50 | Site |
-| Pro | R$ 197 | 200 | Site + E-commerce + Agendamento |
-| Business | R$ 597 | 1.000 | Tudo + Templates premium |
+| Institucional | R$ 99 | 100 | Sites de conteúdo e captação de leads |
+| Service & Agendamento | R$ 139 | 200 | Barbearias, salões, clínicas |
+| E-commerce Starter | R$ 159 | 250 | Pequenas lojas virtuais |
+| E-commerce Avançado | R$ 299 | 600 | Lojas consolidadas e equipes |
+
+Quando o limite é atingido, o bot Telegram envia Inline Keyboard com opções de upgrade
+ou pacotes avulsos (+10/+20/+30 tarefas por R$15/R$25/R$35).
 
 ---
 

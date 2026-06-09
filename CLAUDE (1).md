@@ -210,13 +210,19 @@ configura a conexão para o schema correto antes de qualquer query.
 
 ## Planos
 
-| Plano | Preço mensal | Mensagens/mês | Produtos | Agendamentos | Módulos |
-|---|---|---|---|---|---|
-| Básico | R$ 97 | 50 | — | — | site |
-| Pro | R$ 197 | 200 | 100 | 100 | site + ecommerce + agendamento |
-| Business | R$ 597 | 1.000* | ilimitado | ilimitado | tudo |
+| Plano | Valor | Tarefas/mês | Módulos | Foco |
+|---|---|---|---|---|
+| Institucional | R$ 99 | 100 | site | Sites de conteúdo e leads |
+| Service & Agendamento | R$ 139 | 200 | site + agendamento + cardápio | Barbearias, salões, clínicas |
+| E-commerce Starter | R$ 159 | 250 | site + ecommerce (até 50 produtos) | Pequenas lojas virtuais |
+| E-commerce Avançado | R$ 299 | 600 | site + ecommerce + agendamento + cardápio | Lojas consolidadas e equipes |
 
-*Fair use — excedente R$ 0,50/msg
+**Tarefa:** cada ação completada pelo agente = 1 tarefa (não cada mensagem da conversa).
+
+**Pacotes avulsos** (quando o limite é atingido, bot envia Inline Keyboard Telegram):
+- +10 tarefas: R$ 15,00
+- +20 tarefas: R$ 25,00
+- +30 tarefas: R$ 35,00
 
 ---
 
