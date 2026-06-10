@@ -6,6 +6,7 @@ use App\Modules\Core\DTOs\DadosCadastro;
 use App\Modules\Core\Models\CadastroPendente;
 use App\Modules\Core\Models\Cliente;
 use App\Modules\Core\Models\Plano;
+use App\Modules\Core\Models\PreRegistro;
 use Illuminate\Support\Str;
 
 class GerenciadorCadastro
@@ -67,5 +68,38 @@ class GerenciadorCadastro
             'referencia'   => $referencia,
             'checkout_url' => $preferencia['init_point'],
         ];
+    }
+
+    public function preRegistrar(array $dados): PreRegistro
+    {
+        abort_if(!$this->slugDisponivel($dados['slug_desejado']), 422, 'Slug indisponível.');
+
+        return PreRegistro::create([
+            'nome'          => $dados['nome'],
+            'nome_empresa'  => $dados['nome_empresa'],
+            'email'         => $dados['email'],
+            'telefone'      => $dados['telefone'],
+            'cpf'           => $dados['cpf'],
+            'tipo_site'     => $dados['tipo_site'],
+            'slug_desejado' => $dados['slug_desejado'],
+            'senha'         => bcrypt($dados['senha']),
+            'dados'         => $dados['dados'] ?? null,
+            'token'         => Str::random(64),
+            'status'        => 'pendente',
+        ]);
+    }
+
+    public function confirmarEmail(string $token): PreRegistro
+    {
+        $registro = PreRegistro::where('token', $token)
+            ->where('status', 'pendente')
+            ->firstOrFail();
+
+        $registro->update([
+            'status'         => 'confirmado',
+            'confirmado_em'  => now(),
+        ]);
+
+        return $registro;
     }
 }

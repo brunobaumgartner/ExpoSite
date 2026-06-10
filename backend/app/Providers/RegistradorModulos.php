@@ -31,7 +31,7 @@ class RegistradorModulos extends ServiceProvider
             $rotas = app_path("Modules/{$modulo}/routes/api.php");
 
             if (file_exists($rotas)) {
-                $this->loadRoutesFrom($rotas);
+                require $rotas;
             }
         }
     }

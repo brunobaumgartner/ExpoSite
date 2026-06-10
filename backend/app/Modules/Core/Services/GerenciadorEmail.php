@@ -3,10 +3,22 @@
 namespace App\Modules\Core\Services;
 
 use App\Modules\Core\Models\Cliente;
+use App\Modules\Core\Models\PreRegistro;
 use Illuminate\Support\Facades\Mail;
 
 class GerenciadorEmail
 {
+    public function enviarConfirmacaoCadastro(PreRegistro $registro, string $linkConfirmacao): void
+    {
+        Mail::send('emails.confirmacao-cadastro', [
+            'registro'          => $registro,
+            'link_confirmacao'  => $linkConfirmacao,
+        ], function ($mensagem) use ($registro) {
+            $mensagem->to($registro->email)
+                     ->subject('Confirme seu cadastro no ExpoSite');
+        });
+    }
+
     public function enviarBoasVindas(Cliente $cliente, string $email, string $linkTelegram): void
     {
         Mail::send('emails.boas-vindas', [
