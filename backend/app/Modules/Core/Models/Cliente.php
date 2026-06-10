@@ -13,6 +13,7 @@ class Cliente extends Model
 
     protected $fillable = [
         'slug',
+        'email',
         'subdominio',
         'plano_id',
         'status',

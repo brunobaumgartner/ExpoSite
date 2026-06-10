@@ -54,6 +54,37 @@ class GerenciadorCliente
     }
 
     /**
+     * Retorna os módulos necessários para cada tipo de site.
+     */
+    public function modulosPorTipo(string $tipoSite): array
+    {
+        return match ($tipoSite) {
+            'ecommerce'   => ['Core', 'Site', 'Ecommerce'],
+            'agendamento' => ['Core', 'Site', 'Agendamento'],
+            'cardapio'    => ['Core', 'Site', 'Cardapio'],
+            default       => ['Core', 'Site'],
+        };
+    }
+
+    /**
+     * Cria o usuário administrador no schema do cliente.
+     */
+    public function criarUsuarioAdmin(Cliente $cliente, array $dados): void
+    {
+        $this->configurarConexao($cliente);
+
+        DB::connection('cliente')->table('usuarios')->insert([
+            'nome'       => $dados['nome'],
+            'email'      => $dados['email'],
+            'senha'      => $dados['senha'],
+            'telefone'   => $dados['telefone'],
+            'perfil'     => 'admin',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+    }
+
+    /**
      * Executa as migrations de um módulo no schema do cliente ativo.
      */
     private function rodarMigrations(string $modulo): void
