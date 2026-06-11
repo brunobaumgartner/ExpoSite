@@ -14,16 +14,27 @@ class Cliente extends Model
     protected $fillable = [
         'slug',
         'email',
+        'nome',
+        'nome_empresa',
+        'tipo_site',
+        'telegram_chat_id',
+        'mensagens_usadas_mes',
         'subdominio',
         'plano_id',
         'status',
     ];
 
     protected $casts = [
-        'suspenso_em' => 'datetime',
-        'cancela_em'  => 'datetime',
-        'deleted_at'  => 'datetime',
+        'suspenso_em'          => 'datetime',
+        'cancela_em'           => 'datetime',
+        'deleted_at'           => 'datetime',
+        'mensagens_usadas_mes' => 'integer',
     ];
+
+    public function plano(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(\App\Modules\Core\Models\Plano::class);
+    }
 
     /**
      * Verifica se o cliente está ativo e pode usar a plataforma.

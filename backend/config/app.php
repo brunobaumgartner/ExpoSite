@@ -15,6 +15,9 @@ return [
 
     'name' => env('APP_NAME', 'Laravel'),
 
+    'domain'             => env('APP_DOMAIN', 'exposite.com.br'),
+    'api_token_interno'  => env('API_TOKEN_INTERNO', ''),
+
     /*
     |--------------------------------------------------------------------------
     | Application Environment

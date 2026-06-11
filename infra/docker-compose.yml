@@ -100,6 +100,9 @@ services:
     restart: unless-stopped
     env_file:
       - ../.env
+    environment:
+      REDIS_URL: "redis://:${REDIS_SENHA}@redis:6379/0"
+      API_URL: "http://backend:9000"
     volumes:
       - ../agente:/app
     depends_on:
