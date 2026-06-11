@@ -17,7 +17,8 @@ class GerenciadorCadastro
 
     public function slugDisponivel(string $slug): bool
     {
-        return !Cliente::where('slug', $slug)->exists();
+        return !Cliente::where('slug', $slug)->exists()
+            && !PreRegistro::where('slug_desejado', $slug)->exists();
     }
 
     public function sugerirSlugs(string $slug): array

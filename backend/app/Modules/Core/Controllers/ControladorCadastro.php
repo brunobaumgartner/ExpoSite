@@ -33,11 +33,11 @@ class ControladorCadastro extends Controller
         $request->validate([
             'nome'          => 'required|string|max:150',
             'nome_empresa'  => 'required|string|max:200',
-            'email'         => 'required|email|unique:pre_registros,email',
+            'email'         => 'required|email',
             'telefone'      => 'required|string|max:30',
-            'cpf'           => 'required|string|max:14|unique:pre_registros,cpf',
+            'cpf'           => 'required|string|max:14',
             'tipo_site'     => 'required|in:landing-page,institucional,ecommerce,cardapio,agendamento',
-            'slug_desejado' => 'required|string|max:100|regex:/^[a-z0-9-]+$/',
+            'slug_desejado' => 'required|string|max:100|regex:/^[a-z0-9-]+$/|unique:pre_registros,slug_desejado',
             'senha'         => 'required|string|min:8|confirmed',
         ]);
 
