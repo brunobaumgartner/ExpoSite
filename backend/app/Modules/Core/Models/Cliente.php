@@ -23,6 +23,7 @@ class Cliente extends Model implements AuthenticatableContract
         'tipo_site',
         'telegram_chat_id',
         'mensagens_usadas_mes',
+        'tokens_usados_mes',
         'subdominio',
         'plano_id',
         'status',
@@ -35,6 +36,7 @@ class Cliente extends Model implements AuthenticatableContract
         'cancela_em'           => 'datetime',
         'deleted_at'           => 'datetime',
         'mensagens_usadas_mes' => 'integer',
+        'tokens_usados_mes'    => 'integer',
     ];
 
     public function plano(): \Illuminate\Database\Eloquent\Relations\BelongsTo

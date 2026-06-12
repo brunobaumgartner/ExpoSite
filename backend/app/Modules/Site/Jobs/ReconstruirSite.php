@@ -49,6 +49,8 @@ class ReconstruirSite implements ShouldQueue
             File::copyDirectory($templateDir, $tempDir);
 
             $config = SiteConfig::all()->mapWithKeys(fn($r) => [$r->chave => $this->deserializar($r->valor)])->toArray();
+            $config['_slug']      = $cliente->slug;
+            $config['_api_url']   = rtrim(config('app.url', 'https://exposite.com.br'), '/');
 
             File::put(
                 "{$tempDir}/site.config.json",

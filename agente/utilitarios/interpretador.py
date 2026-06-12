@@ -45,12 +45,15 @@ class Interpretador:
                 temperature=0,
                 response_format={'type': 'json_object'},
             )
-            conteudo = resposta.choices[0].message.content.strip()
-            return json.loads(conteudo)
+            conteudo      = resposta.choices[0].message.content.strip()
+            tokens_usados = resposta.usage.total_tokens if resposta.usage else 0
+            intencao      = json.loads(conteudo)
+            intencao['_tokens'] = tokens_usados
+            return intencao
 
         except json.JSONDecodeError as erro:
             logger.error(f'JSON inválido do GPT: {erro}')
-            return {'acao': 'desconhecida', 'parametros': {}}
+            return {'acao': 'desconhecida', 'parametros': {}, '_tokens': 0}
         except Exception as erro:
             logger.error(f'Erro ao interpretar intenção: {erro}')
-            return {'acao': 'desconhecida', 'parametros': {}}
+            return {'acao': 'desconhecida', 'parametros': {}, '_tokens': 0}

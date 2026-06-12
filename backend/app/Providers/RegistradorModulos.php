@@ -6,7 +6,7 @@ use Illuminate\Support\ServiceProvider;
 
 class RegistradorModulos extends ServiceProvider
 {
-    private array $modulos = ['Core', 'Site', 'Painel', 'Ecommerce', 'Agendamento', 'Cardapio'];
+    private array $modulos = ['Core', 'Site', 'Painel', 'Admin', 'Ecommerce', 'Agendamento', 'Cardapio'];
 
     /**
      * Registra os módulos ativos e suas configurações.

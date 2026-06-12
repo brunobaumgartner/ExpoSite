@@ -49,14 +49,16 @@ class ControladorAgente extends Controller
     public function executarAcao(Request $request, int $clienteId): JsonResponse
     {
         $dados = $request->validate([
-            'acao'       => 'required|string|max:100',
-            'parametros' => 'sometimes|array',
+            'acao'           => 'required|string|max:100',
+            'parametros'     => 'sometimes|array',
+            'tokens_usados'  => 'sometimes|integer|min:0',
         ]);
 
         $mensagem = $this->gerenciador->executarAcao(
-            acao:       $dados['acao'],
-            parametros: $dados['parametros'] ?? [],
-            clienteId:  $clienteId,
+            acao:         $dados['acao'],
+            parametros:   $dados['parametros'] ?? [],
+            clienteId:    $clienteId,
+            tokensUsados: $dados['tokens_usados'] ?? 0,
         );
 
         return response()->json(['mensagem' => $mensagem]);

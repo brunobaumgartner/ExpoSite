@@ -13,6 +13,13 @@ export default function Login() {
   const [carregando, setCarregando] = useState(false)
 
   useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    const tokenImpersonacao = params.get('token')
+    if (tokenImpersonacao) {
+      setToken(tokenImpersonacao)
+      router.replace('/dashboard')
+      return
+    }
     if (estaAutenticado()) router.replace('/dashboard')
   }, [router])
 

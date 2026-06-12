@@ -15,6 +15,7 @@ services:
     depends_on:
       - backend
       - painel
+      - admin
     networks:
       - rede_interna
 
@@ -102,6 +103,18 @@ services:
       args:
         NEXT_PUBLIC_API_URL: https://exposite.com.br
     container_name: exposite_painel
+    restart: unless-stopped
+    networks:
+      - rede_interna
+
+  admin:
+    build:
+      context: ../admin
+      dockerfile: ../infra/docker/admin.Dockerfile
+      args:
+        NEXT_PUBLIC_API_URL: https://exposite.com.br
+        NEXT_PUBLIC_PAINEL_URL: https://app.exposite.com.br
+    container_name: exposite_admin
     restart: unless-stopped
     networks:
       - rede_interna

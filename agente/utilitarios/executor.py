@@ -16,11 +16,11 @@ _HEADERS = lambda: {'Authorization': f'Bearer {configuracao.api_token_interno}'}
 class Executor:
     """Chama a API interna do Laravel para executar a ação identificada."""
 
-    async def executar(self, acao: str, parametros: dict, cliente_id: int) -> str:
+    async def executar(self, acao: str, parametros: dict, cliente_id: int, tokens_usados: int = 0) -> str:
         if acao == 'desconhecida':
             return MENSAGENS_ERRO['desconhecida']
 
-        payload = {'acao': acao, 'parametros': parametros, 'origem': 'agente'}
+        payload = {'acao': acao, 'parametros': parametros, 'origem': 'agente', 'tokens_usados': tokens_usados}
 
         try:
             async with httpx.AsyncClient() as http:

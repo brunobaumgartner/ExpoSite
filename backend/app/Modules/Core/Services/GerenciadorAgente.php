@@ -3,6 +3,7 @@
 namespace App\Modules\Core\Services;
 
 use App\Modules\Core\Models\Cliente;
+use App\Modules\Core\Models\LogAtividade;
 use App\Modules\Core\Models\Plano;
 use App\Modules\Core\Models\PreRegistro;
 use App\Modules\Site\Services\GerenciadorSite;
@@ -103,7 +104,7 @@ class GerenciadorAgente
         });
     }
 
-    public function executarAcao(string $acao, array $parametros, int $clienteId): string
+    public function executarAcao(string $acao, array $parametros, int $clienteId, int $tokensUsados = 0): string
     {
         $cliente = Cliente::with('plano')->findOrFail($clienteId);
 
@@ -120,7 +121,21 @@ class GerenciadorAgente
             default           => $this->acaoPendente($acao),
         };
 
+        $this->gerenciadorCliente->configurarConexao($cliente);
+
+        LogAtividade::create([
+            'tipo'          => str_contains($acao, 'site') ? 'atualizacao_site' : 'mensagem',
+            'acao'          => $acao,
+            'descricao'     => $resposta,
+            'tokens_usados' => $tokensUsados,
+            'status'        => 'sucesso',
+        ]);
+
         $cliente->increment('mensagens_usadas_mes');
+
+        if ($tokensUsados > 0) {
+            $cliente->increment('tokens_usados_mes', $tokensUsados);
+        }
 
         return $resposta;
     }

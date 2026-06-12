@@ -2,18 +2,16 @@
 
 namespace App\Http\Middleware;
 
+use App\Modules\Core\Models\Admin;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
 class AutenticarAdmin
 {
-    /**
-     * Garante que o usuário é um administrador da plataforma.
-     */
     public function handle(Request $request, Closure $next): Response
     {
-        if (!$request->user() || !$request->user()->eAdmin()) {
+        if (!$request->user() instanceof Admin) {
             return response()->json(['mensagem' => 'Acesso negado.'], 403);
         }
 

@@ -186,6 +186,7 @@ class Processador:
             acao=intencao['acao'],
             parametros=intencao.get('parametros', {}),
             cliente_id=cliente['id'],
+            tokens_usados=intencao.get('_tokens', 0),
         )
 
         await mensagem.reply_text(resposta, parse_mode='Markdown')
