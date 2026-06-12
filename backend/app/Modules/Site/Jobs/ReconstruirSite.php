@@ -37,7 +37,7 @@ class ReconstruirSite implements ShouldQueue
         }
 
         $tipoSite     = $cliente->tipo_site ?? 'landing-page';
-        $templateDir  = base_path("../../templates/{$tipoSite}");
+        $templateDir  = "/app/templates/{$tipoSite}";
         $outputDir    = "/app/sites/{$cliente->slug}";
         $tempDir      = sys_get_temp_dir() . "/build_{$cliente->slug}_" . time();
 
