@@ -2,18 +2,22 @@
 
 namespace App\Modules\Core\Models;
 
+use Illuminate\Auth\Authenticatable;
+use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Laravel\Sanctum\HasApiTokens;
 
-class Cliente extends Model
+class Cliente extends Model implements AuthenticatableContract
 {
-    use SoftDeletes;
+    use SoftDeletes, Authenticatable, HasApiTokens;
 
     protected $table = 'clientes';
 
     protected $fillable = [
         'slug',
         'email',
+        'password',
         'nome',
         'nome_empresa',
         'tipo_site',
@@ -23,6 +27,8 @@ class Cliente extends Model
         'plano_id',
         'status',
     ];
+
+    protected $hidden = ['password'];
 
     protected $casts = [
         'suspenso_em'          => 'datetime',

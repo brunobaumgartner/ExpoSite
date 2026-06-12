@@ -14,6 +14,7 @@ services:
       - dados_ssl:/etc/letsencrypt:ro
     depends_on:
       - backend
+      - painel
     networks:
       - rede_interna
 
@@ -91,6 +92,17 @@ services:
       interval: 10s
       timeout: 5s
       retries: 3
+    networks:
+      - rede_interna
+
+  painel:
+    build:
+      context: ../painel
+      dockerfile: ../infra/docker/painel.Dockerfile
+      args:
+        NEXT_PUBLIC_API_URL: https://exposite.com.br
+    container_name: exposite_painel
+    restart: unless-stopped
     networks:
       - rede_interna
 

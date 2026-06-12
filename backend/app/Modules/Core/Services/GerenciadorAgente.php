@@ -7,6 +7,7 @@ use App\Modules\Core\Models\Plano;
 use App\Modules\Core\Models\PreRegistro;
 use App\Modules\Site\Services\GerenciadorSite;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 
 class GerenciadorAgente
 {
@@ -75,6 +76,7 @@ class GerenciadorAgente
             $cliente = Cliente::create([
                 'slug'                => $registro->slug_desejado,
                 'email'               => $registro->email,
+                'password'            => Hash::make($registro->senha),
                 'nome'                => $registro->nome,
                 'nome_empresa'        => $registro->nome_empresa,
                 'tipo_site'           => $registro->tipo_site,
