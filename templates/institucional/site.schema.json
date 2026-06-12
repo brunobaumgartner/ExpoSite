@@ -1,0 +1,13 @@
+{
+  "campos": {
+    "nome_negocio":  { "tipo": "texto", "obrigatorio": true,  "pergunta": "Qual o nome da empresa ou clínica?" },
+    "descricao":     { "tipo": "texto", "obrigatorio": true,  "pergunta": "Descreva o que vocês fazem em uma frase." },
+    "telefone":      { "tipo": "texto", "obrigatorio": true,  "pergunta": "Qual o telefone de contato?" },
+    "whatsapp":      { "tipo": "texto", "obrigatorio": false, "pergunta": "Qual o WhatsApp? (opcional)" },
+    "endereco":      { "tipo": "texto", "obrigatorio": true,  "pergunta": "Qual o endereço?" },
+    "horario":       { "tipo": "texto", "obrigatorio": true,  "pergunta": "Qual o horário de atendimento?" },
+    "cor_primaria":  { "tipo": "cor",   "obrigatorio": true,  "pergunta": "Qual a cor principal da sua marca?" },
+    "slogan":        { "tipo": "texto", "obrigatorio": false, "pergunta": "Tem um slogan? (opcional)" },
+    "instagram":     { "tipo": "texto", "obrigatorio": false, "pergunta": "Qual o Instagram? (opcional)" }
+  }
+}

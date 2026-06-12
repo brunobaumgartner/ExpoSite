@@ -5,12 +5,14 @@ namespace App\Modules\Core\Services;
 use App\Modules\Core\Models\Cliente;
 use App\Modules\Core\Models\Plano;
 use App\Modules\Core\Models\PreRegistro;
+use App\Modules\Site\Services\GerenciadorSite;
 use Illuminate\Support\Facades\DB;
 
 class GerenciadorAgente
 {
     public function __construct(
         private readonly GerenciadorCliente $gerenciadorCliente,
+        private readonly GerenciadorSite    $gerenciadorSite,
     ) {}
 
     public function buscarClientePorChat(string $chatId): ?array
@@ -107,7 +109,12 @@ class GerenciadorAgente
             'consultar_plano' => $this->resumoPlano($cliente),
             'consultar_uso'   => $this->resumoUso($cliente),
             'ajuda'           => $this->textoAjuda($cliente),
-            'publicar_site'   => $this->publicarSite($cliente),
+            'atualizar_site'  => $this->gerenciadorSite->atualizar($cliente, $parametros, 'Atualização via agente'),
+            'ver_versoes'     => $this->gerenciadorSite->listarVersoes($cliente),
+            'rollback_site'   => isset($parametros['versao_id'])
+                ? $this->gerenciadorSite->rollback($cliente, (int) $parametros['versao_id'])
+                : '⚠️ Informe o número da versão. Ex: "rollback versão 3"',
+            'publicar_site'   => $this->gerenciadorSite->atualizar($cliente, [], 'Publicação manual'),
             default           => $this->acaoPendente($acao),
         };
 

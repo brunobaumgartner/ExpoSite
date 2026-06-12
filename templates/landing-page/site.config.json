@@ -1,0 +1,16 @@
+{
+  "nome_negocio": "Meu Negócio",
+  "slogan": "Qualidade que você merece",
+  "descricao": "Oferecemos os melhores serviços da região com atendimento personalizado.",
+  "telefone": "(11) 9999-9999",
+  "whatsapp": "11999999999",
+  "endereco": "Rua das Flores, 123 — Centro",
+  "cor_primaria": "#2563eb",
+  "cor_secundaria": "#1e40af",
+  "instagram": "@meunegocio",
+  "servicos": [
+    { "nome": "Serviço 1", "descricao": "Descrição do primeiro serviço oferecido.", "preco": "R$ 50" },
+    { "nome": "Serviço 2", "descricao": "Descrição do segundo serviço oferecido.", "preco": "R$ 80" },
+    { "nome": "Serviço 3", "descricao": "Descrição do terceiro serviço oferecido.", "preco": "R$ 120" }
+  ]
+}

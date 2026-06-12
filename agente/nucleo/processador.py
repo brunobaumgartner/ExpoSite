@@ -6,6 +6,7 @@ from utilitarios.interpretador import Interpretador
 from utilitarios.executor import Executor
 from utilitarios import contexto
 from intencoes.catalogo import acoes_para_cliente
+from nucleo.onboarding_site import OnboardingSite
 
 logger = logging.getLogger(__name__)
 
@@ -34,9 +35,10 @@ class Processador:
     """Orquestra o fluxo completo: transcrição → interpretação → execução."""
 
     def __init__(self) -> None:
-        self.transcritor   = Transcritor(configuracao.whisper_modelo)
-        self.interpretador = Interpretador()
-        self.executor      = Executor()
+        self.transcritor       = Transcritor(configuracao.whisper_modelo)
+        self.interpretador     = Interpretador()
+        self.executor          = Executor()
+        self.onboarding_site   = OnboardingSite()
 
     async def processar(self, mensagem: Message, chat_id: str, cliente: dict | None) -> None:
         texto = await self._extrair_texto(mensagem)
@@ -146,7 +148,7 @@ class Processador:
             await mensagem.reply_text('❌ Ocorreu um erro ao ativar sua conta. Tente novamente em alguns minutos.')
             return
 
-        contexto.limpar(chat_id)
+        contexto.definir(chat_id, {'etapa': 'onboarding_ativado', 'dados': {}}, ttl_segundos=7200)
 
         nome_empresa = estado['dados']['nome_empresa']
         slug         = estado['dados']['slug']
@@ -154,22 +156,33 @@ class Processador:
         await mensagem.reply_text(
             f'🎉 *Conta ativada com sucesso!*\n\n'
             f'Bem-vindo ao ExpoSite, *{estado["dados"]["nome"]}*!\n\n'
-            f'Seu site estará disponível em breve em:\n'
-            f'🌐 *{slug}.exposite.com.br*\n\n'
-            f'Agora você pode me enviar comandos de voz ou texto para gerenciar *{nome_empresa}*.\n\n'
-            f'👉 Digite *ajuda* para ver o que posso fazer por você.',
+            f'Agora vamos configurar o seu site *{nome_empresa}*.\n'
+            f'São poucas perguntas — pode responder em texto ou áudio! 🎙️',
             parse_mode='Markdown',
         )
 
     async def _processar_comando(self, mensagem: Message, texto: str, cliente: dict) -> None:
+        chat_id = str(mensagem.chat_id)
+        estado  = contexto.obter(chat_id)
+
+        # Se o cliente está no meio do onboarding do site, continua o fluxo
+        if estado and estado.get('etapa') == 'coletando_site':
+            await self.onboarding_site.processar(mensagem, chat_id, cliente, texto)
+            return
+
+        # Se o cliente acabou de ativar a conta e ainda não tem site configurado
+        if estado and estado.get('etapa') == 'onboarding_ativado':
+            await self.onboarding_site.processar(mensagem, chat_id, cliente, texto)
+            return
+
         if not texto:
             await mensagem.reply_text('Não entendi. Pode repetir? 🤔')
             return
 
-        modulos      = cliente.get('modulos', [])
-        acoes        = acoes_para_cliente(modulos)
-        intencao     = await self.interpretador.interpretar(texto, acoes)
-        resposta     = await self.executor.executar(
+        modulos  = cliente.get('modulos', [])
+        acoes    = acoes_para_cliente(modulos)
+        intencao = await self.interpretador.interpretar(texto, acoes)
+        resposta = await self.executor.executar(
             acao=intencao['acao'],
             parametros=intencao.get('parametros', {}),
             cliente_id=cliente['id'],

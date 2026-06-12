@@ -1,0 +1,17 @@
+{
+  "nome_negocio": "Loja Modelo",
+  "slogan": "Moda com estilo e qualidade",
+  "telefone": "(11) 9999-9999",
+  "whatsapp": "11999999999",
+  "cor_primaria": "#ec4899",
+  "cor_secundaria": "#be185d",
+  "instagram": "@loja.modelo",
+  "produtos": [
+    { "nome": "Camiseta Básica",    "preco": "R$ 59",  "categoria": "Roupas",    "em_estoque": true  },
+    { "nome": "Calça Jeans",        "preco": "R$ 129", "categoria": "Roupas",    "em_estoque": true  },
+    { "nome": "Vestido Floral",     "preco": "R$ 89",  "categoria": "Roupas",    "em_estoque": true  },
+    { "nome": "Bolsa de Couro",     "preco": "R$ 199", "categoria": "Acessórios","em_estoque": true  },
+    { "nome": "Óculos de Sol",      "preco": "R$ 79",  "categoria": "Acessórios","em_estoque": false },
+    { "nome": "Tênis Casual",       "preco": "R$ 149", "categoria": "Calçados",  "em_estoque": true  }
+  ]
+}

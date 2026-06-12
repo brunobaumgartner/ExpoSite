@@ -1,0 +1,28 @@
+{
+  "nome_negocio": "Pizzaria Modelo",
+  "slogan": "A melhor pizza do bairro",
+  "telefone": "(11) 9999-9999",
+  "whatsapp": "11999999999",
+  "endereco": "Av. das Pizzas, 100 — Centro",
+  "cor_primaria": "#dc2626",
+  "cor_secundaria": "#991b1b",
+  "horario": "Ter–Dom: 18h às 23h",
+  "instagram": "@pizzaria.modelo",
+  "categorias": [
+    {
+      "nome": "Pizzas",
+      "itens": [
+        { "nome": "Calabresa",     "descricao": "Mussarela, calabresa, cebola e azeitona",    "preco": "R$ 45" },
+        { "nome": "Margherita",    "descricao": "Molho, mussarela, tomate e manjericão",       "preco": "R$ 42" },
+        { "nome": "Frango c/ Catupiry", "descricao": "Frango desfiado, catupiry e milho",      "preco": "R$ 48" }
+      ]
+    },
+    {
+      "nome": "Bebidas",
+      "itens": [
+        { "nome": "Refrigerante lata",  "descricao": "350ml",  "preco": "R$ 6"  },
+        { "nome": "Suco natural",       "descricao": "500ml",  "preco": "R$ 10" }
+      ]
+    }
+  ]
+}

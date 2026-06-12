@@ -45,9 +45,11 @@ services:
     restart: unless-stopped
     env_file:
       - ../.env
-    command: php artisan queue:work --sleep=3 --tries=3 --timeout=90
+    command: php artisan queue:work --sleep=3 --tries=3 --timeout=300
     volumes:
       - ../backend:/var/www/backend
+      - ../templates:/app/templates:ro
+      - ../sites:/app/sites
     depends_on:
       banco:
         condition: service_healthy
@@ -105,6 +107,7 @@ services:
       API_URL: "http://backend:9000"
     volumes:
       - ../agente:/app
+      - ../templates:/app/templates:ro
     depends_on:
       banco:
         condition: service_healthy

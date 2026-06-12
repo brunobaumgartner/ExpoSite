@@ -1,0 +1,10 @@
+{
+  "campos": {
+    "nome_negocio":  { "tipo": "texto", "obrigatorio": true, "pergunta": "Qual o nome da sua loja?" },
+    "telefone":      { "tipo": "texto", "obrigatorio": true, "pergunta": "Qual o telefone de contato?" },
+    "whatsapp":      { "tipo": "texto", "obrigatorio": false, "pergunta": "WhatsApp para pedidos?" },
+    "cor_primaria":  { "tipo": "cor",   "obrigatorio": true, "pergunta": "Qual a cor principal da sua marca?" },
+    "slogan":        { "tipo": "texto", "obrigatorio": false, "pergunta": "Tem um slogan? (opcional)" },
+    "instagram":     { "tipo": "texto", "obrigatorio": false, "pergunta": "Qual o Instagram? (opcional)" }
+  }
+}

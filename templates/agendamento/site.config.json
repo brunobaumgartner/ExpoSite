@@ -1,0 +1,18 @@
+{
+  "nome_negocio": "Barbearia Modelo",
+  "slogan": "Estilo e precisão em cada corte",
+  "descricao": "A melhor barbearia da região com profissionais experientes e ambiente agradável.",
+  "telefone": "(11) 9999-9999",
+  "whatsapp": "11999999999",
+  "endereco": "Rua dos Barbeiros, 42 — Centro",
+  "cor_primaria": "#18181b",
+  "cor_secundaria": "#3f3f46",
+  "horario": "Seg–Sáb: 9h às 19h",
+  "instagram": "@barbearia.modelo",
+  "servicos": [
+    { "nome": "Corte de Cabelo", "duracao": "30 min", "preco": "R$ 35" },
+    { "nome": "Barba",           "duracao": "20 min", "preco": "R$ 25" },
+    { "nome": "Corte + Barba",   "duracao": "45 min", "preco": "R$ 55" },
+    { "nome": "Progressiva",     "duracao": "60 min", "preco": "R$ 90" }
+  ]
+}

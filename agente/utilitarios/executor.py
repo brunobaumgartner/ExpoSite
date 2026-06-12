@@ -74,6 +74,21 @@ class Executor:
             logger.error(f'Erro ao buscar pré-registro ({email}): {erro}')
             return None
 
+    async def atualizar_site(self, cliente_id: int, campos: dict, mensagem: str = '') -> str | None:
+        try:
+            async with httpx.AsyncClient() as http:
+                resposta = await http.post(
+                    f'{configuracao.api_url}/api/interno/clientes/{cliente_id}/site/atualizar',
+                    json={'campos': campos, 'mensagem': mensagem},
+                    headers=_HEADERS(),
+                    timeout=30.0,
+                )
+            resposta.raise_for_status()
+            return resposta.json().get('mensagem')
+        except Exception as erro:
+            logger.error(f'Erro ao atualizar site (cliente {cliente_id}): {erro}')
+            return None
+
     async def ativar_cliente(self, pre_registro_id: int, chat_id: str) -> dict | None:
         try:
             async with httpx.AsyncClient() as http:

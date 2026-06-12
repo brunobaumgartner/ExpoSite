@@ -1,0 +1,22 @@
+{
+  "nome_negocio": "Clínica Modelo",
+  "slogan": "Cuidando da sua saúde com dedicação",
+  "descricao": "Atendimento humanizado com profissionais especializados e estrutura moderna.",
+  "telefone": "(11) 3333-3333",
+  "whatsapp": "11933333333",
+  "endereco": "Av. da Saúde, 500 — Centro",
+  "cor_primaria": "#0d9488",
+  "cor_secundaria": "#0f766e",
+  "horario": "Seg–Sex: 8h às 18h | Sáb: 8h às 12h",
+  "instagram": "@clinica.modelo",
+  "servicos": [
+    { "nome": "Clínica Geral",       "descricao": "Atendimento geral com foco preventivo e diagnóstico precoce" },
+    { "nome": "Cardiologia",         "descricao": "Avaliação e acompanhamento da saúde do coração" },
+    { "nome": "Ortopedia",           "descricao": "Tratamento de ossos, articulações e musculatura" },
+    { "nome": "Nutrição",            "descricao": "Orientação nutricional personalizada para sua saúde" }
+  ],
+  "equipe": [
+    { "nome": "Dr. João Silva",     "cargo": "Clínico Geral",  "especialidade": "CRM 12345-SP" },
+    { "nome": "Dra. Ana Costa",     "cargo": "Cardiologista",  "especialidade": "CRM 23456-SP" }
+  ]
+}
